@@ -24,4 +24,24 @@ def calculate_player_score(df):
         print(f"Erro ao calcular as pontuações: {e}")
         return None
     
+def top_players(df, n=5):
+    """
+    Retorna os top n jogadores com base na pontuação calculada.
+    """
 
+    try:
+
+        if 'Score' not in df.columns:
+            raise ValueError("A coluna 'Score' não existe no DataFrame")
+
+        top_df = (
+            df.sort_values(by='Score', ascending=False)
+              .head(n)
+              .reset_index(drop=True)
+        )
+
+        return top_df
+
+    except Exception as e:
+        print(f"Erro ao obter os top jogadores: {e}")
+        return None
