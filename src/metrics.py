@@ -24,7 +24,7 @@ def calculate_player_score(df):
         print(f"Erro ao calcular as pontuações: {e}")
         return None
     
-def top_players(df, n=5):
+def top_players(df, n=10):
     """
     Retorna os top n jogadores com base na pontuação calculada.
     """
