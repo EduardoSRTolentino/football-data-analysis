@@ -16,11 +16,9 @@ def load_players_data(path):
     """
 
     try:
-        """Carrega o dataset de jogadores a partir de um arquivo CSV."""
         df = pd.read_csv(path)
         return df
 
     except Exception as e:
-        """Exibe erros que possam ocorrer durante o carregamento dos dados."""
         print(f"Erro ao carregar os dados: {e}")
         return None
