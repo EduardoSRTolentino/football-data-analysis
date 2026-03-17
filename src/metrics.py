@@ -82,23 +82,63 @@ def calculate_efficiency(df):
         return None
     
 def normalize_columns(df):
+    """
+    Normaliza colunas numéricas do DataFrame utilizando Min-Max Scaling.
+
+    As colunas normalizadas são:
+    - Gols
+    - Assistencias
+    - Minutos_Jogados
+
+    A normalização segue a fórmula:
+        (x - min) / (max - min)
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame contendo os dados dos jogadores.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame com colunas normalizadas adicionadas:
+        - Gols_norm
+        - Assistencias_norm
+        - Minutos_norm
+    """
+
     try:
         df = df.copy()
-        
+
+        # --- GOLS ---
         min_gols = df["Gols"].min()
         max_gols = df["Gols"].max()
-        df["Gols_Normalizados"] = (df["Gols"] - min_gols) / (max_gols - min_gols) if max_gols != min_gols else 0
 
+        if max_gols != min_gols:
+            df["Gols_norm"] = (df["Gols"] - min_gols) / (max_gols - min_gols)
+        else:
+            df["Gols_norm"] = 0
+
+        # --- ASSISTÊNCIAS ---
         min_assists = df["Assistencias"].min()
         max_assists = df["Assistencias"].max()
-        df["Assistencias_Normalizadas"] = (df["Assistencias"] - min_assists) / (max_assists - min_assists) if max_assists != min_assists else 0
 
+        if max_assists != min_assists:
+            df["Assistencias_norm"] = (df["Assistencias"] - min_assists) / (max_assists - min_assists)
+        else:
+            df["Assistencias_norm"] = 0
+
+        # --- MINUTOS JOGADOS ---
         min_minutos = df["Minutos_Jogados"].min()
         max_minutos = df["Minutos_Jogados"].max()
-        df["Minutos_Jogados_Normalizados"] = (df["Minutos_Jogados"] - min_minutos) / (max_minutos - min_minutos) if max_minutos != min_minutos else 0
+
+        if max_minutos != min_minutos:
+            df["Minutos_norm"] = (df["Minutos_Jogados"] - min_minutos) / (max_minutos - min_minutos)
+        else:
+            df["Minutos_norm"] = 0
 
         return df
 
     except Exception as e:
-        print(f"Erro: {e}")
+        print(f"Erro ao normalizar colunas: {e}")
         return None
