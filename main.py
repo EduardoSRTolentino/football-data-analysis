@@ -9,7 +9,7 @@ def main():
 
     df = calculate_player_score(df)
 
-    plot_top_players(df)
+    plot_top_players(df, by="Advanced_Score")
     plot_goals_vs_assists(df)
 
 if __name__ == "__main__":

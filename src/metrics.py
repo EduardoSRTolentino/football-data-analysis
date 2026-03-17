@@ -24,18 +24,31 @@ def calculate_player_score(df):
         print(f"Erro ao calcular as pontuações: {e}")
         return None
     
-def top_players(df, n=10):
+def top_players(df, n=10, by="Advanced_Score"):
     """
-    Retorna os top n jogadores com base na pontuação calculada.
+    Retorna os top N jogadores com base em uma métrica escolhida.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame contendo os dados dos jogadores.
+    n : int, optional
+        Número de jogadores a retornar (default é 10).
+    by : str, optional
+        Coluna usada para ordenação (default é 'Score').
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame com os top N jogadores ordenados.
     """
 
     try:
-
-        if 'Score' not in df.columns:
-            raise ValueError("A coluna 'Score' não existe no DataFrame")
+        if by not in df.columns:
+            raise ValueError(f"A coluna '{by}' não existe no DataFrame")
 
         top_df = (
-            df.sort_values(by='Score', ascending=False)
+            df.sort_values(by=by, ascending=False)
               .head(n)
               .reset_index(drop=True)
         )
@@ -142,3 +155,64 @@ def normalize_columns(df):
     except Exception as e:
         print(f"Erro ao normalizar colunas: {e}")
         return None
+    
+def calculate_advanced_score(df):
+    """
+    Calcula um score avançado dos jogadores com base em métricas normalizadas.
+
+    A fórmula utilizada é:
+        Advanced_Score =
+            (Gols_norm * 0.5) +
+            (Assistencias_norm * 0.3) +
+            (Efficiency * 0.2)
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame contendo as colunas normalizadas e a eficiência.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame com a coluna 'Advanced_Score' adicionada.
+    """
+
+    try:
+        df = df.copy()
+
+        # validações
+        required_columns = ["Gols_norm", "Assistencias_norm", "Efficiency"]
+
+        for col in required_columns:
+            if col not in df.columns:
+                raise ValueError(f"A coluna '{col}' não existe no DataFrame")
+
+        # cálculo do score
+        df["Advanced_Score"] = (
+            (df["Gols_norm"] * 0.5) +
+            (df["Assistencias_norm"] * 0.3) +
+            (df["Efficiency"] * 0.2)
+        )
+
+        return df
+
+    except Exception as e:
+        print(f"Erro ao calcular score avançado: {e}")
+        return None
+    
+def save_top_players(df, path="output/top_players.csv", n=10):
+    """
+    Salva os top N jogadores em um arquivo CSV.
+    """
+
+    try:
+        top_df = top_players(df, n, by="Advanced_Score")
+
+        if top_df is None:
+            return
+
+        top_df.to_csv(path, index=False)
+        print(f"Arquivo salvo em: {path}")
+
+    except Exception as e:
+        print(f"Erro ao salvar arquivo: {e}")

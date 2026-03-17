@@ -1,40 +1,24 @@
 import matplotlib.pyplot as plt
 from src.metrics import top_players
 
-def plot_top_players(df, n=10):
+def plot_top_players(df, n=10, by="Advanced_Score"):
     """
-    Gera um gráfico de barras horizontais com os top N jogadores
-    com base na pontuação (Score).
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        DataFrame contendo os dados dos jogadores, incluindo a coluna 'Score'.
-
-    n : int, optional
-        Número de jogadores a serem exibidos no gráfico (default é 10).
-
-    Returns
-    -------
-    None
-        A função apenas exibe o gráfico.
+    Plota os top N jogadores com base em uma métrica escolhida.
     """
 
-    top_df = top_players(df, n)
+    top_df = top_players(df, n, by)
 
     if top_df is None:
-        print("Erro: não foi possível obter os top jogadores.")
         return
 
-    plt.barh(top_df['Nome_Jogador'], top_df['Score'])
+    plt.barh(top_df['Nome_Jogador'], top_df[by])
 
-    plt.xlabel('Pontuação')
+    plt.xlabel(by)
     plt.ylabel('Jogadores')
-    plt.title('Top Jogadores por Performance')
+    plt.title(f'Top Jogadores por {by}')
 
     plt.tight_layout()
     plt.show()
-
 
 def plot_goals_vs_assists(df):
     """
