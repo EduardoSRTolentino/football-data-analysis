@@ -80,3 +80,25 @@ def calculate_efficiency(df):
     except Exception as e:
         print(f"Erro ao calcular a eficiência: {e}")
         return None
+    
+def normalize_columns(df):
+    try:
+        df = df.copy()
+        
+        min_gols = df["Gols"].min()
+        max_gols = df["Gols"].max()
+        df["Gols_Normalizados"] = (df["Gols"] - min_gols) / (max_gols - min_gols) if max_gols != min_gols else 0
+
+        min_assists = df["Assistencias"].min()
+        max_assists = df["Assistencias"].max()
+        df["Assistencias_Normalizadas"] = (df["Assistencias"] - min_assists) / (max_assists - min_assists) if max_assists != min_assists else 0
+
+        min_minutos = df["Minutos_Jogados"].min()
+        max_minutos = df["Minutos_Jogados"].max()
+        df["Minutos_Jogados_Normalizados"] = (df["Minutos_Jogados"] - min_minutos) / (max_minutos - min_minutos) if max_minutos != min_minutos else 0
+
+        return df
+
+    except Exception as e:
+        print(f"Erro: {e}")
+        return None
