@@ -1,3 +1,10 @@
 __pycache__/
 *.pyc
+*.pyo
 venv/
+.env
+.venv/
+output/
+*.csv          # evitar commitar dados sensíveis
+.DS_Store
+.pytest_cache/

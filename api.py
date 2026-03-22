@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi import HTTPException
+from src.config import settings
 from src.schemas import Player
 from typing import List
 from functools import lru_cache
@@ -22,7 +23,7 @@ def process_data():
     Processa e cacheia os dados para evitar recomputação a cada requisição.
     Use /refresh para limpar o cache manualmente.
     """
-    df = load_players_data("dataset/players.csv")
+    df = load_players_data(settings.DATASET_PATH)
 
     if df is None:
         return None
@@ -59,6 +60,7 @@ def get_players(
         (df["Assistencias"] >= min_assistencias)
     ]
 
+    df = df.sort_values("Advanced_Score", ascending=False)
     return df.head(limit).to_dict(orient="records")
 
 @app.get("/top_players", response_model=List[Player])
