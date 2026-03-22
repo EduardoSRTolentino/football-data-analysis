@@ -1,4 +1,5 @@
 import pandas as pd
+from src.config import settings
 
 def calculate_player_score(df):
     """
@@ -15,14 +16,11 @@ def calculate_player_score(df):
         DataFrame atualizado com a coluna 'Score'.
     """
 
-    try:
-        df = df.copy()
-        df['Score'] = (df['Gols'] * 4) + (df['Assistencias'] * 3)
-        return df
-
-    except Exception as e:
-        print(f"Erro ao calcular as pontuações: {e}")
-        return None
+    
+    df = df.copy()
+    df['Score'] = (df['Gols'] * 4) + (df['Assistencias'] * 3)
+    return df
+    
     
 def top_players(df, n=10, by="Advanced_Score"):
     """
@@ -85,14 +83,13 @@ def calculate_efficiency(df):
         Caso ocorra algum erro durante o cálculo da eficiência.
     """
 
-    try:
-        df = df.copy()
-        df['Efficiency'] = df['Gols'] / df['Minutos_Jogados']
-        return df
-
-    except Exception as e:
-        print(f"Erro ao calcular a eficiência: {e}")
-        return None
+    df = df.copy()
+    df['Efficiency'] = df.apply(
+        lambda row: row['Gols'] / row['Minutos_Jogados']
+        if row['Minutos_Jogados'] > 0 else 0.0,
+        axis=1
+    )
+    return df
     
 def normalize_columns(df):
     """
@@ -150,6 +147,14 @@ def normalize_columns(df):
         else:
             df["Minutos_norm"] = 0
 
+        # --- EFICIÊNCIA ---
+        min_eff = df["Efficiency"].min()
+        max_eff = df["Efficiency"].max()
+        if max_eff != min_eff:
+            df["Efficiency_norm"] = (df["Efficiency"] - min_eff) / (max_eff - min_eff)
+        else:
+            df["Efficiency_norm"] = 0.0
+
         return df
 
     except Exception as e:
@@ -177,30 +182,26 @@ def calculate_advanced_score(df):
         DataFrame com a coluna 'Advanced_Score' adicionada.
     """
 
-    try:
-        df = df.copy()
-
-        # validações
-        required_columns = ["Gols_norm", "Assistencias_norm", "Efficiency"]
-
-        for col in required_columns:
-            if col not in df.columns:
-                raise ValueError(f"A coluna '{col}' não existe no DataFrame")
-
-        # cálculo do score
-        df["Advanced_Score"] = (
-            (df["Gols_norm"] * 0.5) +
-            (df["Assistencias_norm"] * 0.3) +
-            (df["Efficiency"] * 0.2)
-        )
-
-        return df
-
-    except Exception as e:
-        print(f"Erro ao calcular score avançado: {e}")
-        return None
     
-def save_top_players(df, path="output/top_players.csv", n=10):
+    df = df.copy()
+
+     # validações
+    required_columns = ["Gols_norm", "Assistencias_norm", "Efficiency_norm"]
+
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f"A coluna '{col}' não existe no DataFrame")
+
+    # cálculo do score
+     df["Advanced_Score"] = (
+        (df["Gols_norm"] * 0.5) +
+        (df["Assistencias_norm"] * 0.3) +
+        (df["Efficiency_norm"] * 0.2)
+    )
+
+    return df
+
+def save_top_players(df, path=settings.OUTPUT_PATH, n=settings.TOP_PLAYERS_LIMIT):
     """
     Salva os top N jogadores em um arquivo CSV.
     """
