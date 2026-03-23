@@ -6,7 +6,7 @@ from src.metrics import (
     calculate_advanced_score
 )
 from src.visualization import plot_top_players, plot_goals_vs_assists
-from src.metrics import save_top_players  # se você criou a função
+from src.metrics import save_top_players 
 
 def main():
 
@@ -34,8 +34,8 @@ def main():
         return
 
     # 6. visualizações
-    plot_top_players(df, by="Advanced_Score")
-    plot_goals_vs_assists(df)
+    plot_top_players(df, by="Advanced_Score", save_path="output/top_players.png")
+    plot_goals_vs_assists(df, save_path="output/goals_vs_assists.png")
 
     # 7. salvar resultado (opcional mas MUITO importante)
     save_top_players(df)
