@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from src.config import settings
 from src.schemas import Player
 from typing import List
@@ -91,3 +93,8 @@ def get_top_players(
 def refresh_data():
     process_data.cache_clear()
     return {"message": "Cache limpo com sucesso"}
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Erro não tratado: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Erro interno no servidor"})
