@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi import Request
+from fastapi import Query
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from src.config import settings
 from src.schemas import Player
 from typing import List
 from functools import lru_cache
 from src.load_data import load_players_data
+from src.logger import get_logger
 from src.metrics import (
     calculate_player_score,
     calculate_efficiency,
@@ -14,7 +19,14 @@ from src.metrics import (
 )
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 VALID_METRICS = ["Score", "Advanced_Score", "Efficiency"]
+logger = get_logger(__name__)
 
 
 @lru_cache()
@@ -45,9 +57,9 @@ def home():
 # 🔹 Endpoint: listar jogadores
 @app.get("/players", response_model=List[Player])
 def get_players(
-    limit: int = 10,
-    min_gols: int = 0,
-    min_assistencias: int = 0
+    limit: int = Query(default=10, ge=1, le=100),
+    min_gols: int = Query(default=0, ge=0),
+    min_assistencias: int = Query(default=0, ge=0)
 ):
     df = process_data()
 
@@ -90,4 +102,13 @@ def get_top_players(
 @app.post("/refresh")
 def refresh_data():
     process_data.cache_clear()
+    logger.info("Cache limpo manualmente via /refresh")
     return {"message": "Cache limpo com sucesso"}
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Erro não tratado em {request.url}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Erro interno no servidor"}
+    )

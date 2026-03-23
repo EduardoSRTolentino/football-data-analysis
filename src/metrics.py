@@ -1,7 +1,8 @@
 import pandas as pd
 from src.config import settings
+from typing import Optional
 
-def calculate_player_score(df):
+def calculate_player_score(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calcula a pontuação dos jogadores com base em suas estatísticas.
 
@@ -41,21 +42,18 @@ def top_players(df, n=10, by="Advanced_Score"):
         DataFrame com os top N jogadores ordenados.
     """
 
-    try:
-        if by not in df.columns:
-            raise ValueError(f"A coluna '{by}' não existe no DataFrame")
+    
+    if by not in df.columns:
+        raise ValueError(f"A coluna '{by}' não existe no DataFrame")
 
-        top_df = (
-            df.sort_values(by=by, ascending=False)
-              .head(n)
-              .reset_index(drop=True)
-        )
+    top_df = (
+        df.sort_values(by=by, ascending=False)
+            .head(n)
+            .reset_index(drop=True)
+    )
 
-        return top_df
-
-    except Exception as e:
-        print(f"Erro ao obter os top jogadores: {e}")
-        return None
+    return top_df
+    
     
 def calculate_efficiency(df):
     """
@@ -90,76 +88,24 @@ def calculate_efficiency(df):
         axis=1
     )
     return df
+
+def _minmax_normalize(series: pd.Series) -> pd.Series:
+    min_val, max_val = series.min(), series.max()
+    if max_val == min_val:
+        return pd.Series(0.0, index=series.index)
+    return (series - min_val) / (max_val - min_val)
     
-def normalize_columns(df):
-    """
-    Normaliza colunas numéricas do DataFrame utilizando Min-Max Scaling.
+def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    cols_to_normalize = {
+        "Gols": "Gols_norm",
+        "Assistencias": "Assistencias_norm",
+        "Minutos_Jogados": "Minutos_norm",
+    }
+    for source_col, target_col in cols_to_normalize.items():
+        df[target_col] = _minmax_normalize(df[source_col])
+    return df
 
-    As colunas normalizadas são:
-    - Gols
-    - Assistencias
-    - Minutos_Jogados
-
-    A normalização segue a fórmula:
-        (x - min) / (max - min)
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        DataFrame contendo os dados dos jogadores.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame com colunas normalizadas adicionadas:
-        - Gols_norm
-        - Assistencias_norm
-        - Minutos_norm
-    """
-
-    try:
-        df = df.copy()
-
-        # --- GOLS ---
-        min_gols = df["Gols"].min()
-        max_gols = df["Gols"].max()
-
-        if max_gols != min_gols:
-            df["Gols_norm"] = (df["Gols"] - min_gols) / (max_gols - min_gols)
-        else:
-            df["Gols_norm"] = 0
-
-        # --- ASSISTÊNCIAS ---
-        min_assists = df["Assistencias"].min()
-        max_assists = df["Assistencias"].max()
-
-        if max_assists != min_assists:
-            df["Assistencias_norm"] = (df["Assistencias"] - min_assists) / (max_assists - min_assists)
-        else:
-            df["Assistencias_norm"] = 0
-
-        # --- MINUTOS JOGADOS ---
-        min_minutos = df["Minutos_Jogados"].min()
-        max_minutos = df["Minutos_Jogados"].max()
-
-        if max_minutos != min_minutos:
-            df["Minutos_norm"] = (df["Minutos_Jogados"] - min_minutos) / (max_minutos - min_minutos)
-        else:
-            df["Minutos_norm"] = 0
-
-        # --- EFICIÊNCIA ---
-        min_eff = df["Efficiency"].min()
-        max_eff = df["Efficiency"].max()
-        if max_eff != min_eff:
-            df["Efficiency_norm"] = (df["Efficiency"] - min_eff) / (max_eff - min_eff)
-        else:
-            df["Efficiency_norm"] = 0.0
-
-        return df
-
-    except Exception as e:
-        print(f"Erro ao normalizar colunas: {e}")
-        return None
     
 def calculate_advanced_score(df):
     """
@@ -193,7 +139,7 @@ def calculate_advanced_score(df):
             raise ValueError(f"A coluna '{col}' não existe no DataFrame")
 
     # cálculo do score
-     df["Advanced_Score"] = (
+    df["Advanced_Score"] = (
         (df["Gols_norm"] * 0.5) +
         (df["Assistencias_norm"] * 0.3) +
         (df["Efficiency_norm"] * 0.2)
@@ -206,14 +152,11 @@ def save_top_players(df, path=settings.OUTPUT_PATH, n=settings.TOP_PLAYERS_LIMIT
     Salva os top N jogadores em um arquivo CSV.
     """
 
-    try:
-        top_df = top_players(df, n, by="Advanced_Score")
+    top_df = top_players(df, n, by="Advanced_Score")
 
-        if top_df is None:
-            return
+    if top_df is None:
+        return
 
-        top_df.to_csv(path, index=False)
-        print(f"Arquivo salvo em: {path}")
+    top_df.to_csv(path, index=False)
+    print(f"Arquivo salvo em: {path}")
 
-    except Exception as e:
-        print(f"Erro ao salvar arquivo: {e}")

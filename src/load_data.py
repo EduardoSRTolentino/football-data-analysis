@@ -1,24 +1,16 @@
 import pandas as pd
+from src.logger import get_logger
 
-def load_players_data(path):
-    """
-    Carrega o dataset de jogadores a partir de um arquivo CSV.
+logger = get_logger(__name__)
 
-    Parameters
-    ----------
-    path : str
-        Caminho do arquivo CSV.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame com os dados dos jogadores.
-    """
-
+def load_players_data(path: str):
     try:
         df = pd.read_csv(path)
+        logger.info(f"Dataset carregado com sucesso: {path} ({len(df)} jogadores)")
         return df
-
+    except FileNotFoundError:
+        logger.error(f"Arquivo não encontrado: {path}")
+        return None
     except Exception as e:
-        print(f"Erro ao carregar os dados: {e}")
+        logger.error(f"Erro inesperado ao carregar dados: {e}", exc_info=True)
         return None
